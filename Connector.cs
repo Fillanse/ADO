@@ -1,23 +1,21 @@
 using Microsoft.Data.SqlClient;
 
-namespace IntroductionToADO.Introduction
+namespace IntroductionToADO
 {
-  class Connector
+	class Connector
 	{
 		string connection_string;
 		SqlConnection connection;
-
 		public Connector(string connection_string)
 		{
 			this.connection_string = connection_string;
 			this.connection = new SqlConnection(connection_string);
 		}
-
-		public void Select(string fields, string tables, string condition = "")
+    public void Execute(string cmd){
+    
+    }
+		public void Select(string cmd)
 		{
-			string cmd = $"SELECT {fields} FROM {tables}";
-			if (condition != "") cmd += $" WHERE {condition}";
-			cmd += ";";
 			connection.Open();
 			SqlCommand command = new SqlCommand(cmd, connection);
 			SqlDataReader reader = command.ExecuteReader();
@@ -33,42 +31,81 @@ namespace IntroductionToADO.Introduction
 			reader.Close();
 			connection.Close();
 		}
-
-    public void Insert(string table, string values)
-	  {
-			string cmd = $"INSERT INTO {table} VALUES ({values})";
+		public void Select(string fields, string tables, string condition = "")
+		{
+			string cmd = $"SELECT {fields} FROM {tables}";
+			if (condition != "") cmd += $" WHERE {condition}";
+			cmd += ";";
+			Select(cmd);
+		}
+		public void Insert(string cmd)
+		{
 			connection.Open();
 			SqlCommand command = new SqlCommand(cmd, connection);
 			command.ExecuteNonQuery();
 			connection.Close();
 		}
-
-    public void Update(string table, string setClause, string condition = ""){
-      string cmd = $"UPDATE {table} SET {setClause}";
-      if (!string.IsNullOrWhiteSpace(condition)) cmd += $" WHERE {condition}";
-      cmd += ";";
+		public void Insert(string table, string values)
+		{
+			string cmd = $"INSERT INTO {table} VALUES ({values})";
+			Insert(cmd);
+		}
+		public object Scalar(string cmd)
+		{
+			SqlCommand command = new SqlCommand(cmd, connection);
+			connection.Open();
+		object value = command.ExecuteScalar();
+			//int value = Convert.ToInt32(command.ExecuteScalar());
+			connection.Close();
+			return value;
+		}
+    public object GetPrimaryKey(string cmd){
+      SqlCommand command = new SqlCommand(cmd,connection);
       connection.Open();
-      SqlCommand command = new SqlCommand(cmd, connection);
-      command.ExecuteNonQuery();
+      object primaryKey = command.ExecuteScalar();
       connection.Close();
+      return primaryKey;
     }
+    public object GetPrimaryKey(string table, string fields, string values){
+      string[] s_fields = fields.Split(',');
+      string[] s_values = values.Split(',');
+      if(s_fields.Length != s_values.Length) return null;
+      string condition = "";
+      for(int i = 0; i < s_values.Length;i++){
+        condition += $"{s_fields[i].Trim()}=N'{s_values[i].Trim()}'";
+        if(i != s_values.Length - 1) condition += " AND ";
+      }
+      string cmd = $"SELECT {GetPrimaryKeyColumn(table)} FROM {table} WHERE {condition}";
+      return Scalar(cmd);
+    }
+		public string GetPrimaryKeyColumn(string table)
+		{
+string cmd = $"SELECT COLUMN_NAME " +
+$"FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE " +
+$"WHERE CONSTRAINT_NAME = (SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_NAME = N'{table}' AND CONSTRAINT_TYPE=N'PRIMARY KEY')";
+			return (string)Scalar(cmd);
+// 			return (string)Scalar
+// (
+// $"SELECT COLUMN_NAME " +
+// $"FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE " +
+// $"WHERE CONSTRAINT_NAME = (SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_NAME = N'{table}' AND CONSTRAINT_TYPE=N'PRIMARY KEY')"
+// );
+		}
+		public int GetLastPrimaryKey(string table)
+		{
+			return Convert.ToInt32(Scalar($"SELECT MAX({GetPrimaryKeyColumn(table)}) FROM {table}"));
+		}
+		public int GetNextPrimaryKey(string table)
+		{
+			return GetLastPrimaryKey(table) + 1;
+		}
 
-    public void AddPrimaryKey(string table, string column){
-      string cmd = $"ALTER TABLE [{table}] ADD CONSTRAINT PK_{table}_{column} PRIMARY KEY ([{column}]);";
-      connection.Open();
-      SqlCommand command = new SqlCommand(cmd, connection);
-      command.ExecuteNonQuery();
-      connection.Close();
-    }
-
-    public void AddForeignKey(string table, string column, string refTable, string refColumn)
-    {
-      string constraintName = $"FK_{table}_{refTable}";
-      string cmd = $"ALTER TABLE [{table}] ADD CONSTRAINT {constraintName} FOREIGN KEY ([{column}]) REFERENCES [{refTable}] ([{refColumn}]);";
-      connection.Open();
-      SqlCommand command = new SqlCommand(cmd, connection);
-      command.ExecuteNonQuery();
-      connection.Close();
-    }
-  }
+		public void Update(string cmd)
+		{
+			SqlCommand command = new SqlCommand(cmd, connection);
+			connection.Open();
+			command.ExecuteNonQuery();
+			connection.Close();
+		}
+	}
 }
