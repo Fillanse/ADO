@@ -80,6 +80,8 @@ namespace IntroductionToADO
     }
 		public string GetPrimaryKeyColumn(string table)
 		{
+      string pk = $"{table.Substring(0,table.Length-1)}_id".ToLower();
+      return pk;
 string cmd = $"SELECT COLUMN_NAME " +
 $"FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE " +
 $"WHERE CONSTRAINT_NAME = (SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_NAME = N'{table}' AND CONSTRAINT_TYPE=N'PRIMARY KEY')";

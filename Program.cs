@@ -35,8 +35,8 @@ namespace IntroductionToADO.Introduction
 
 			connector.Select("*", "Directors");
 
-      Console.WriteLine(connector.GetPrimaryKey("SELECT director_id FROM Directors WHERE last_name=N'Cameron' AND first_name=N'James'"));
-      Console.WriteLine(connector.GetPrimaryKey("Directors", "last_name, first_name", "Cameron, James"));
+      // Console.WriteLine(connector.GetPrimaryKey("SELECT director_id FROM Directors WHERE last_name=N'Cameron' AND first_name=N'James'"));
+      // Console.WriteLine(connector.GetPrimaryKey("Directors", "last_name, first_name", "Cameron, James"));
      Console.WriteLine(connector.GetPrimaryKeyColumn("Movies"));
       Console.WriteLine(connector.GetPrimaryKey("Movies", "title, year", "The Heat, 1995-12-15"));
 		}
