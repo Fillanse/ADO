@@ -14,7 +14,7 @@ namespace IntroductionToADO.Introduction
 		{
 			string connection_string = "Server=.;Initial Catalog=Movies_SPU_411;TrustServerCertificate=True;User Id=sa;Password=Password1;";
 			SqlConnection connection = new SqlConnection(connection_string);
-			string cmd = "SELECT title,year,first_name,last_name FROM Movies JOIN Directors ON(director=director_id)";
+			string cmd = "INSERT INTO Directors (director_id, last_name, first_name) VALUES (7, N'Tarantino', N'Quentin')";
 			
       Connector connector = new Connector(connection_string);
 
@@ -33,12 +33,17 @@ namespace IntroductionToADO.Introduction
 			Console.WriteLine("\n-------------------------------------------------------------\n");
 
 
-			connector.Select("*", "Directors");
-
+			// connector.Select("*", "Directors");
+            Console.WriteLine("Table: " + SqlParser.GetTableName(cmd));
+            Console.WriteLine("Columns: " + SqlParser.GetColumnNames(cmd));
+            Console.WriteLine("Values: " + SqlParser.GetRowValues(cmd));
       // Console.WriteLine(connector.GetPrimaryKey("SELECT director_id FROM Directors WHERE last_name=N'Cameron' AND first_name=N'James'"));
       // Console.WriteLine(connector.GetPrimaryKey("Directors", "last_name, first_name", "Cameron, James"));
-     Console.WriteLine(connector.GetPrimaryKeyColumn("Movies"));
-      Console.WriteLine(connector.GetPrimaryKey("Movies", "title, year", "The Heat, 1995-12-15"));
-		}
+      // Console.WriteLine(connector.GetPrimaryKeyColumn("Movies"));
+      // Console.WriteLine(connector.GetPrimaryKey("Movies", "title, year", "The Heat, 1995-12-15"));
+		  // connector.Insert($"INSERT Directors(director_id,last_name,first_name) VALUES({connector.GetNextPrimaryKey("Directors")},N'Scott',N'Gray')");
+		  //   connector.Insert($"{connector.GetNextPrimaryKey("Directors")}", "7,N'Tarantino',N'Quentin'");
+		  //   connector.Select("*", "Directors");
+    }
 	}
 }
